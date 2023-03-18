@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+   <meta charset="UTF-8">
+   <meta http-equiv="X-UA-Compatible" content="IE=edge">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+   <title>Генератор ячеек</title>
+   <style>
+      main {
+         display: flex;
+         flex-direction: column;
+         align-items: center;
+      }
+
+      .generateForm {
+         padding-top: 50px;
+         margin-bottom: 20px;
+      }
+
+      .grid-item {
+         display: block;
+         box-sizing: border-box;
+         background-color: red;
+         height: 140px;
+         border: 1px solid #000;
+         position: absolute;
+         left: 0;
+         top: 0;
+         will-change: transform;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         font-size: 22px;
+         font-weight: 700;
+      }
+
+      .grid-item.big {
+         transform: scale(1.1);
+         z-index: 2;
+      }
+
+      .grid__wrapper {
+         display: flex;
+         align-items: flex-start;
+         justify-content: center;
+         max-width: 800px;
+         width: 100%;
+         margin: auto;
+      }
+
+      .grid {
+         background-color: #555555;
+         margin: auto;
+         position: relative;
+         width: 100%;
+         overflow: hidden;
+         padding: 15px;
+      }
+
+      .grid.loaded .grid-item {
+         cursor: pointer;
+         transition: top .6s cubic-bezier(.58, -.55, .265, 1.45), left .6s cubic-bezier(.58, -.55, .265, 1.45), transform .6s cubic-bezier(.58, -.55, .265, 1.45);
+      }
+
+      .grid.pointer-none {
+         pointer-events: none;
+      }
+
+      @media (max-width: 576px) {
+         .grid-item {
+            height: 150px;
+         }
+
+         .segments [data-last-card] {
+            width: calc(100% - 20px) !important;
+            pointer-events: none;
+         }
+      }
+   </style>
+</head>
+
+<body>
+
+   <main>
+      <form class="generateForm">
+         <input max="20" min="6" type="number" name="counter" placeholder="Введите кол-во ячеек" style="width:160px">
+         <button>Собрать</button>
+      </form>
+      <div class="grid__wrapper">
+      </div>
+   </main>
+
+
+   <script>
+
+      class CardsGame {
+         constructor(data) {
+            this.cardsCount = data.cardsCount;
+            this.parentElement = data.parentElement;
+            this.gridPlace = document.createElement('div');
+            this.cardsArr = [];
+            this.windowListener = this.getElementsPosition.bind(this)
+            this.addEventListeners();
+         }
+         shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+               const j = Math.floor(Math.random() * (i + 1));
+               [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+         }
+
+         createCardsParent() {
+            const parentElement = document.querySelector(this.parentElement);
+            parentElement.innerHTML = '';
+            this.gridPlace.classList.add('grid', 'pointer-none');
+            parentElement.appendChild(this.gridPlace);
+         }
+
+         cardsGenerate() {
+            this.gridPlace.innerHTML = '';
+            this.gridPlace.classList.remove('segments', 'normal', 'loaded');
+            this.cardsCount % 2 !== 0 ? this.gridPlace.classList.add('segments') : this.gridPlace.classList.add('normal');
+
+            for (let index = 0; index < this.cardsCount; index++) {
+               const card = document.createElement("div");
+               card.classList.add("grid-item");
+               card.textContent = index + 1;
+               card.setAttribute("data-card-num", index + 1);
+               if (index === this.cardsCount - 1) card.setAttribute("data-last-card", '');
+               this.cardsArr.push(card);
+            }
+            this.gridPlace.append(...this.cardsArr);
+
+         }
+
+         getElementsPosition() {
+            let columnCount = window.innerWidth > 576 ? 3 : 2;
+            const parentHeight = Math.ceil(this.cardsArr.length / columnCount) * this.cardsArr[0].offsetHeight;
+            this.gridPlace.style.height = `${parentHeight}px`;
+
+            if (columnCount === 2 && this.cardsArr.length % 2 !== 0) {
+               const lastCard = this.cardsArr.find(item => item.hasAttribute('data-last-card'));
+               const lastCardIndex = this.cardsArr.findIndex(item => item.hasAttribute('data-last-card'));
+               if (lastCard) {
+                  this.cardsArr.splice(lastCardIndex, 1);
+                  this.cardsArr.push(lastCard);
+               }
+            }
+
+            this.cardsArr.forEach((item, index) => {
+               const itemWidth = (this.gridPlace.clientWidth / columnCount) - 10;
+               const itemHeight = item.offsetHeight;
+               const column = index % columnCount; // определяем номер колонки (от 1 до 3)
+               const row = Math.floor(index / columnCount);// определяем номер строки
+               item.style.width = `${itemWidth}px`;
+               item.style.left = `${(itemWidth * column) + 15}px`;
+               item.style.top = `${(itemHeight * row) + 15}px`;
+            });
+
+
+         }
+
+         cardsRandomPosition() {
+            this.cardsArr = this.shuffleArray(this.cardsArr);
+         }
+
+         clickLoader(e) {
+            const openedCardPos = {
+               y: '',
+               x: ''
+            };
+
+            const target = e.target;
+            if (target.closest('.grid-item')) {
+
+               if (target.closest('.grid-item.big')) {
+                  target.closest('.grid-item.big').classList.remove('big');
+                  return;
+               }
+
+               const clickedCard = target.closest('.grid-item');
+               const openedCard = this.gridPlace.querySelector('.grid-item.big');
+               openedCardPos.y = clickedCard.style.top;
+               openedCardPos.x = clickedCard.style.left;
+
+               if (openedCard) {
+                  clickedCard.style.top = openedCard.style.top;
+                  clickedCard.style.left = openedCard.style.left;
+                  openedCard.style.top = openedCardPos.y;
+                  openedCard.style.left = openedCardPos.x;
+
+                  this.gridPlace.querySelectorAll('.grid-item.big').forEach(item => item.classList.remove('big'));
+
+
+                  const openedEl = this.cardsArr.find(item => item === openedCard);
+                  const openedElIndex = this.cardsArr.findIndex(item => item === openedCard);
+
+                  const currenEl = this.cardsArr.find(item => item === clickedCard);
+                  const currenElIndex = this.cardsArr.findIndex(item => item === clickedCard);
+
+                  this.cardsArr.splice(openedElIndex, 1, currenEl);
+                  this.cardsArr.splice(currenElIndex, 1, openedEl);
+
+                  // Повторная отрисовка всех карточек для изменения их струтуры в html
+                  setTimeout(() => {
+                     this.gridPlace.innerHTML = '';
+                     this.cardsArr.forEach(item => this.gridPlace.appendChild(item));
+                     const dataArr = this.cardsArr.reduce((acc, i) => {
+                        acc.push(i.dataset.cardNum)
+                        return acc;
+                     }, [])
+                     console.log(dataArr);
+                  }, 350);
+
+               } else {
+                  clickedCard.classList.toggle('big');
+               }
+            }
+         }
+
+         addEventListeners() {
+            window.addEventListener('resize', this.windowListener, false);
+            this.gridPlace.addEventListener('click', this.clickLoader.bind(this));
+         }
+
+         init() {
+            setTimeout(() => { this.gridPlace.classList.add('loaded'); }, 200);
+            this.cardsGenerate();
+            this.createCardsParent();
+            this.getElementsPosition();
+            setTimeout(() => {
+               this.gridPlace.classList.remove('pointer-none');
+               this.cardsRandomPosition();
+               this.getElementsPosition();
+
+            }, 1200);
+         }
+
+         destroy() {
+            window.removeEventListener('resize', this.windowListener, false);
+         }
+      }
+
+
+
+
+      var app = new CardsGame({
+         cardsCount: 15,
+         parentElement: ".grid__wrapper"
+      });
+      app.init()
+
+
+      const form = document.querySelector('.generateForm')
+      form.addEventListener('submit', (e) => {
+         e.preventDefault();
+         const countValue = form.counter.value;
+
+         app.destroy();
+         app = new CardsGame({
+            cardsCount: countValue,
+            parentElement: ".grid__wrapper"
+         });
+         app.init();
+
+      });
+
+   </script>
+</body>
+
+</html>
