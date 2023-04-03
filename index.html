@@ -35,6 +35,17 @@
          font-weight: 700;
       }
 
+      .grid-item__inner {
+         position: absolute;
+         left: 0;
+         top: 0;
+         width: 100%;
+         height: 100%;
+         background-repeat: no-repeat;
+         background-size: cover;
+         background-position: center;
+      }
+
       .grid-item.big {
          transform: scale(1.1);
          z-index: 2;
@@ -96,7 +107,8 @@
 
       class CardsGame {
          constructor(data) {
-            this.cardsCount = data.cardsCount;
+            this.cardImages = data.gameData.cardImages;
+            this.cardsCount = data.gameData.cardImages.length;
             this.parentElement = data.parentElement;
             this.gridPlace = document.createElement('div');
             this.cardsArr = [];
@@ -125,8 +137,12 @@
 
             for (let index = 0; index < this.cardsCount; index++) {
                const card = document.createElement("div");
+               const cardInner = document.createElement("div");
+               cardInner.classList.add("grid-item__inner");
+               cardInner.style.backgroundImage = `url(${this.cardImages[index]})`;
                card.classList.add("grid-item");
                card.textContent = index + 1;
+               card.append(cardInner);
                card.setAttribute("data-card-num", index + 1);
                if (index === this.cardsCount - 1) card.setAttribute("data-last-card", '');
                this.cardsArr.push(card);
@@ -245,27 +261,52 @@
 
 
 
-
+      const gameDataRes = {
+         'arrowType': 'black',
+         "cardImages": [
+            "https://swiperjs.com/demos/images/nature-1.jpg",
+            "https://swiperjs.com/demos/images/nature-2.jpg",
+            "https://swiperjs.com/demos/images/nature-3.jpg",
+            "https://swiperjs.com/demos/images/nature-4.jpg",
+            "https://swiperjs.com/demos/images/nature-5.jpg",
+            "https://swiperjs.com/demos/images/nature-6.jpg",
+            "https://swiperjs.com/demos/images/nature-7.jpg",
+            "https://swiperjs.com/demos/images/nature-8.jpg",
+            "https://swiperjs.com/demos/images/nature-9.jpg",
+         ],
+         'cardsText': [
+            'Подсказка для 1 карточки',
+            'Подсказка для 2 карточки',
+            'Подсказка для 3 карточки',
+            'Подсказка для 4 карточки',
+            'Подсказка для 5 карточки',
+            'Подсказка для 6 карточки',
+            'Подсказка для 7 карточки',
+            'Подсказка для 8 карточки',
+            'Подсказка для 9 карточки',
+         ],
+         'resultMessage': 'Какое то сообщение при успешной сборке игры',
+      }
       var app = new CardsGame({
-         cardsCount: 15,
+         gameData: gameDataRes,
          parentElement: ".grid__wrapper"
       });
       app.init()
 
 
-      const form = document.querySelector('.generateForm')
-      form.addEventListener('submit', (e) => {
-         e.preventDefault();
-         const countValue = form.counter.value;
+      // const form = document.querySelector('.generateForm')
+      // form.addEventListener('submit', (e) => {
+      //    e.preventDefault();
+      //    const countValue = form.counter.value;
 
-         app.destroy();
-         app = new CardsGame({
-            cardsCount: countValue,
-            parentElement: ".grid__wrapper"
-         });
-         app.init();
+      //    app.destroy();
+      //    app = new CardsGame({
+      //       cardsCount: countValue,
+      //       parentElement: ".grid__wrapper"
+      //    });
+      //    app.init();
 
-      });
+      // });
 
    </script>
 </body>
