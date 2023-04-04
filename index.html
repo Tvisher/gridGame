@@ -339,6 +339,19 @@
 
       @media (max-width: 576px) {
 
+         [data-cards-cound="12"] [data-card-num="10"]::before,
+         [data-cards-cound="9"] [data-last-card]::before {
+            display: block;
+         }
+
+         [data-cards-cound="12"] [data-card-num="11"]::after {
+            display: none;
+         }
+
+         [data-cards-cound="9"] [data-card-num="9"]::after {
+            display: none;
+         }
+
          [data-card-num]::after,
          [data-card-num]::before {
             position: absolute;
@@ -751,7 +764,7 @@
                return;
             }
 
-            if (target.closest('[data-last-card]') && window.innerWidth < 567) {
+            if (target.closest('[data-last-card]') && window.innerWidth < 567 && this.cardsArr.length % 2 !== 0) {
                return
             }
 
@@ -796,8 +809,8 @@
                      const cardsOrder = dataArr.join('');
                      if (cardsOrder == this.correctOrder) {
                         setTimeout(() => {
-                           alert('!!!');
-                        }, 500);
+                           alert('Успешно собрано!');
+                        }, 200);
                      }
                   }, 350);
 
@@ -837,30 +850,30 @@
       const gameDataRes = {
          'arrowType': 'white',
          "cardImages": [
-            // "https://swiperjs.com/demos/images/nature-1.jpg",
-            // "https://swiperjs.com/demos/images/nature-2.jpg",
-            // "https://swiperjs.com/demos/images/nature-3.jpg",
-            // "https://swiperjs.com/demos/images/nature-4.jpg",
-            // "https://swiperjs.com/demos/images/nature-5.jpg",
-            // "https://swiperjs.com/demos/images/nature-6.jpg",
-            // "https://swiperjs.com/demos/images/nature-7.jpg",
-            // "https://swiperjs.com/demos/images/nature-8.jpg",
-            // "https://swiperjs.com/demos/images/nature-10.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
+            "https://swiperjs.com/demos/images/nature-1.jpg",
+            "https://swiperjs.com/demos/images/nature-2.jpg",
+            "https://swiperjs.com/demos/images/nature-3.jpg",
+            "https://swiperjs.com/demos/images/nature-4.jpg",
+            "https://swiperjs.com/demos/images/nature-5.jpg",
+            "https://swiperjs.com/demos/images/nature-6.jpg",
+            "https://swiperjs.com/demos/images/nature-7.jpg",
+            "https://swiperjs.com/demos/images/nature-8.jpg",
+            "https://swiperjs.com/demos/images/nature-10.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
+            // "https://swiperjs.com/demos/images/nature-9.jpg",
 
          ],
          'cardsText': [
