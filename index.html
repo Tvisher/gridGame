@@ -21,7 +21,7 @@
       .grid-item {
          display: block;
          box-sizing: border-box;
-         background-color: red;
+         background-color: #6c6c6c;
          height: 140px;
          border: 1px solid #000;
          position: absolute;
@@ -78,6 +78,64 @@
          pointer-events: none;
       }
 
+      .grid-item__prompt {
+         position: absolute;
+         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg width='29' height='29' viewBox='0 0 29 29' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3ccircle cx='14.4992' cy='14.4992' r='13.05' fill='url(%23paint0_linear_650_13043)'/%3e%3cpath d='M27.5492 14.4992C27.5492 12.7855 27.2117 11.0885 26.5558 9.5052C25.9 7.9219 24.9388 6.48328 23.727 5.27147C22.5152 4.05967 21.0765 3.09841 19.4932 2.44259C17.9099 1.78677 16.213 1.44922 14.4992 1.44922L14.4992 14.4992H27.5492Z' fill='url(%23paint1_linear_650_13043)'/%3e%3cpath d='M12.293 4.90625H16.5141L16.1623 17.5697H12.6447L12.293 4.90625Z' fill='white'/%3e%3cpath d='M12.084 21.7487C12.084 20.414 13.166 19.332 14.5007 19.332C15.8353 19.332 16.9173 20.414 16.9173 21.7487C16.9173 23.0834 15.8353 24.1654 14.5007 24.1654C13.166 24.1654 12.084 23.0834 12.084 21.7487Z' fill='white'/%3e%3cdefs%3e%3clinearGradient id='paint0_linear_650_13043' x1='-1.56232' y1='-7.56265' x2='35.852' y2='-2.85696' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.0261371' stop-color='%23FA0056' stop-opacity='0.72'/%3e%3cstop offset='1' stop-color='%23AD073D' stop-opacity='0'/%3e%3cstop offset='1' stop-color='%23FA0056' stop-opacity='0'/%3e%3c/linearGradient%3e%3clinearGradient id='paint1_linear_650_13043' x1='-1.56232' y1='-7.56265' x2='35.852' y2='-2.85696' gradientUnits='userSpaceOnUse'%3e%3cstop offset='0.0261371' stop-color='%23FA0056' stop-opacity='0.72'/%3e%3cstop offset='1' stop-color='%23AD073D' stop-opacity='0'/%3e%3cstop offset='1' stop-color='%23FA0056' stop-opacity='0'/%3e%3c/linearGradient%3e%3c/defs%3e%3c/svg%3e ");
+         background-repeat: no-repeat;
+         width: 29px;
+         height: 29px;
+         left: 10px;
+         bottom: 10px;
+      }
+
+      .modal-prompt {
+         opacity: 0;
+         visibility: hidden;
+         position: fixed;
+         left: 0;
+         top: 0;
+         right: 0;
+         bottom: 0;
+         display: flex;
+         align-items: center;
+         justify-content: center;
+         padding: 20px;
+         background-color: rgba(0, 0, 0, 0.4);
+         transition: opacity .2s ease-in-out, visibility .2s ease-in-out;
+      }
+
+      .modal-prompt.show {
+         opacity: 1;
+         visibility: visible;
+      }
+
+      .modal-prompt__content {
+         background: #EBF4FF;
+         padding: 30px;
+         max-width: 427px;
+         width: 100%;
+         font-family: 'Montserrat';
+         font-style: normal;
+         font-weight: 400;
+         font-size: 14px;
+         line-height: 130%;
+         color: #888888;
+         position: relative;
+      }
+
+      .modal-prompt__close {
+         position: absolute;
+         width: 20px;
+         height: 20px;
+         cursor: pointer;
+         right: 10px;
+         top: 10px;
+         background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg width='20' height='20' viewBox='0 0 20 20' fill='none' xmlns='http://www.w3.org/2000/svg'%3e%3crect x='1.41406' width='26' height='2' transform='rotate(45 1.41406 0)' fill='%2348474D'/%3e%3crect x='19.7988' y='1.41406' width='26' height='2' transform='rotate(135 19.7988 1.41406)' fill='%2348474D'/%3e%3c/svg%3e ");
+         background-repeat: no-repeat;
+         background-size: contain;
+         background-position: center;
+      }
+
       @media (max-width: 576px) {
          .grid-item {
             height: 150px;
@@ -87,6 +145,10 @@
             width: calc(100% - 20px) !important;
             pointer-events: none;
          }
+
+         .segments [data-last-card] .grid-item__inner {
+            width: 50%;
+         }
       }
    </style>
 </head>
@@ -94,12 +156,7 @@
 <body>
 
    <main>
-      <form class="generateForm">
-         <input max="20" min="6" type="number" name="counter" placeholder="Введите кол-во ячеек" style="width:160px">
-         <button>Собрать</button>
-      </form>
-      <div class="grid__wrapper">
-      </div>
+      <div class="grid__wrapper"></div>
    </main>
 
 
@@ -108,11 +165,15 @@
       class CardsGame {
          constructor(data) {
             this.cardImages = data.gameData.cardImages;
-            this.cardsCount = data.gameData.cardImages.length;
-            this.parentElement = data.parentElement;
+            this.cardsText = data.gameData.cardsText;
+            this.cardsCount = this.cardImages.length;
+            this.parentElement = document.querySelector(data.parentElement);
             this.gridPlace = document.createElement('div');
+            this.modalPrompt = document.createElement('div');
             this.cardsArr = [];
-            this.windowListener = this.getElementsPosition.bind(this)
+            this.correctOrder = this.cardImages.map((item, index) => String(index + 1)).join('');
+            this.windowListener = this.getElementsPosition.bind(this);
+            this.clickListener = this.clickLoader.bind(this);
             this.addEventListeners();
          }
          shuffleArray(array) {
@@ -124,10 +185,24 @@
          }
 
          createCardsParent() {
-            const parentElement = document.querySelector(this.parentElement);
-            parentElement.innerHTML = '';
+            this.parentElement.innerHTML = '';
             this.gridPlace.classList.add('grid', 'pointer-none');
-            parentElement.appendChild(this.gridPlace);
+            this.parentElement.appendChild(this.gridPlace);
+            this.createModalPrompt();
+         }
+
+         createModalPrompt() {
+            this.modalPrompt.classList.add('modal-prompt');
+            const modalContent = document.createElement('div');
+            modalContent.classList.add('modal-prompt__content');
+            const modalClose = document.createElement('div');
+            modalClose.classList.add('modal-prompt__close');
+            const modalText = document.createElement('div');
+            modalText.classList.add('modal-prompt__text');
+            modalContent.append(modalClose);
+            modalContent.append(modalText);
+            this.modalPrompt.append(modalContent);
+            this.parentElement.append(this.modalPrompt);
          }
 
          cardsGenerate() {
@@ -138,12 +213,20 @@
             for (let index = 0; index < this.cardsCount; index++) {
                const card = document.createElement("div");
                const cardInner = document.createElement("div");
+               const cardText = this.cardsText[index];
+               if (cardText.trim().length > 0) {
+                  const cardNameplate = document.createElement("div");
+                  cardNameplate.setAttribute('data-prompt', cardText);
+                  cardNameplate.classList.add("grid-item__prompt");
+                  cardInner.append(cardNameplate);
+               }
                cardInner.classList.add("grid-item__inner");
                cardInner.style.backgroundImage = `url(${this.cardImages[index]})`;
-               card.classList.add("grid-item");
-               card.textContent = index + 1;
                card.append(cardInner);
+
+               card.classList.add("grid-item");
                card.setAttribute("data-card-num", index + 1);
+
                if (index === this.cardsCount - 1) card.setAttribute("data-last-card", '');
                this.cardsArr.push(card);
             }
@@ -183,12 +266,26 @@
          }
 
          clickLoader(e) {
-            const openedCardPos = {
+            const selectedCardPos = {
                y: '',
                x: ''
             };
 
             const target = e.target;
+
+            if (target.closest('.modal-prompt__close') || (target.closest('.modal-prompt') && !target.closest('.modal-prompt__content'))) {
+               this.modalPrompt.classList.remove('show');
+               return;
+            }
+
+            if (target.closest('.grid-item__prompt')) {
+               const currentTargetPrompt = target.closest('.grid-item__prompt').dataset.prompt;
+               const modalContentArea = this.modalPrompt.querySelector('.modal-prompt__text');
+               modalContentArea.innerHTML = currentTargetPrompt;
+               this.modalPrompt.classList.add('show');
+               return;
+            }
+
             if (target.closest('.grid-item')) {
 
                if (target.closest('.grid-item.big')) {
@@ -197,21 +294,20 @@
                }
 
                const clickedCard = target.closest('.grid-item');
-               const openedCard = this.gridPlace.querySelector('.grid-item.big');
-               openedCardPos.y = clickedCard.style.top;
-               openedCardPos.x = clickedCard.style.left;
+               const selectedCard = this.gridPlace.querySelector('.grid-item.big');
+               selectedCardPos.y = clickedCard.style.top;
+               selectedCardPos.x = clickedCard.style.left;
 
-               if (openedCard) {
-                  clickedCard.style.top = openedCard.style.top;
-                  clickedCard.style.left = openedCard.style.left;
-                  openedCard.style.top = openedCardPos.y;
-                  openedCard.style.left = openedCardPos.x;
+               if (selectedCard) {
+                  clickedCard.style.top = selectedCard.style.top;
+                  clickedCard.style.left = selectedCard.style.left;
+                  selectedCard.style.top = selectedCardPos.y;
+                  selectedCard.style.left = selectedCardPos.x;
 
                   this.gridPlace.querySelectorAll('.grid-item.big').forEach(item => item.classList.remove('big'));
 
-
-                  const openedEl = this.cardsArr.find(item => item === openedCard);
-                  const openedElIndex = this.cardsArr.findIndex(item => item === openedCard);
+                  const openedEl = this.cardsArr.find(item => item === selectedCard);
+                  const openedElIndex = this.cardsArr.findIndex(item => item === selectedCard);
 
                   const currenEl = this.cardsArr.find(item => item === clickedCard);
                   const currenElIndex = this.cardsArr.findIndex(item => item === clickedCard);
@@ -226,8 +322,14 @@
                      const dataArr = this.cardsArr.reduce((acc, i) => {
                         acc.push(i.dataset.cardNum)
                         return acc;
-                     }, [])
-                     console.log(dataArr);
+                     }, []);
+
+                     const cardsOrder = dataArr.join('');
+                     if (cardsOrder == this.correctOrder) {
+                        setTimeout(() => {
+                           alert('!!!');
+                        }, 500);
+                     }
                   }, 350);
 
                } else {
@@ -238,24 +340,26 @@
 
          addEventListeners() {
             window.addEventListener('resize', this.windowListener, false);
-            this.gridPlace.addEventListener('click', this.clickLoader.bind(this));
+            window.addEventListener('click', this.clickListener, false);
          }
 
          init() {
             setTimeout(() => { this.gridPlace.classList.add('loaded'); }, 200);
-            this.cardsGenerate();
             this.createCardsParent();
+            this.cardsGenerate();
             this.getElementsPosition();
             setTimeout(() => {
                this.gridPlace.classList.remove('pointer-none');
                this.cardsRandomPosition();
                this.getElementsPosition();
-
             }, 1200);
          }
 
          destroy() {
+            this.parentElement.innerHTML = '';
+            this.cardsArr = [];
             window.removeEventListener('resize', this.windowListener, false);
+            window.removeEventListener('click', this.clickListener, false);
          }
       }
 
@@ -272,12 +376,12 @@
             "https://swiperjs.com/demos/images/nature-6.jpg",
             "https://swiperjs.com/demos/images/nature-7.jpg",
             "https://swiperjs.com/demos/images/nature-8.jpg",
-            "https://swiperjs.com/demos/images/nature-9.jpg",
+            "https://swiperjs.com/demos/images/nature-10.jpg",
          ],
          'cardsText': [
             'Подсказка для 1 карточки',
             'Подсказка для 2 карточки',
-            'Подсказка для 3 карточки',
+            '',
             'Подсказка для 4 карточки',
             'Подсказка для 5 карточки',
             'Подсказка для 6 карточки',
@@ -286,27 +390,14 @@
             'Подсказка для 9 карточки',
          ],
          'resultMessage': 'Какое то сообщение при успешной сборке игры',
-      }
+      };
+
+
       var app = new CardsGame({
          gameData: gameDataRes,
          parentElement: ".grid__wrapper"
       });
-      app.init()
-
-
-      // const form = document.querySelector('.generateForm')
-      // form.addEventListener('submit', (e) => {
-      //    e.preventDefault();
-      //    const countValue = form.counter.value;
-
-      //    app.destroy();
-      //    app = new CardsGame({
-      //       cardsCount: countValue,
-      //       parentElement: ".grid__wrapper"
-      //    });
-      //    app.init();
-
-      // });
+      app.init();
 
    </script>
 </body>
